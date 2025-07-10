@@ -1,4 +1,4 @@
-# 鱼群'视'卫智能渔业水环境管理系统
+# 基于地平线RDKX5开发板的智能渔业水环境管理系统
 
 <div align="center">
 
@@ -6,8 +6,6 @@
 ![Python](https://img.shields.io/badge/python-3.8+-green.svg)
 ![Platform](https://img.shields.io/badge/platform-RDKX5-orange.svg)
 ![Status](https://img.shields.io/badge/status-stable-brightgreen.svg)
-
-**基于地平线RDKX5开发板的智能渔业水环境管理系统**
 
 *让智能科技守护水域生态* 🐟🌊
 
