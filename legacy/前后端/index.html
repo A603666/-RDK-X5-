@@ -1,0 +1,1948 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>基于RDKX5与火山引擎的渔场管理系统 - 2025</title>
+  <!-- TailwindCSS -->
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <!-- Recharts -->
+  <script src="https://unpkg.com/react@17/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/recharts/umd/Recharts.min.js"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- AMap API - 密钥将通过后端API获取 -->
+  <script type="text/javascript" id="amap-script"></script>
+  <!-- 高质量中文字体 -->
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+  <!-- 添加更美观的favicon -->
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230891b2' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M22 13A10 10 0 0 0 12 3'%3E%3C/path%3E%3Cpath d='M15 3a18.2 18.2 0 0 1-1.724 7.553A15.31 15.31 0 0 1 10 15.886'%3E%3C/path%3E%3Cpath d='M9 6.998a13.16 13.16 0 0 1-.476 3.81A16.619 16.619 0 0 1 7 13.862'%3E%3C/path%3E%3Cpath d='M8 19.03v.97h8v-.97'%3E%3C/path%3E%3Cpath d='M4 15h.393a7.5 7.5 0 0 0 7.108 0H12'%3E%3C/path%3E%3Cpath d='M2 14.984l.35-.5c1.2-1.5 1.824-1.717 3.325-1 1.5.85 1.95-.331 1.95-1.5'%3E%3C/path%3E%3C/svg%3E" type="image/svg+xml">
+  
+  <!-- PWA 支持 -->
+  <meta name="theme-color" content="#0891b2">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="基于RDKX5与火山引擎的渔场管理系统">
+  
+  <!-- 页面性能优化 -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link rel="preconnect" href="https://unpkg.com">
+  
+  <!-- 外部CSS文件 -->
+  <link rel="stylesheet" href="前端.css">
+  
+  <style>
+    /* 仅保留必要的内联样式 */
+    body {
+      font-family: 'Noto Sans SC', system-ui, -apple-system, sans-serif;
+      scroll-behavior: smooth;
+    }
+    
+    /* 动画效果 */
+    @keyframes float {
+      0% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+      100% { transform: translateY(0px); }
+    }
+    
+    .float-animation {
+      animation: float 6s ease-in-out infinite;
+    }
+    
+    /* 加载指示器 */
+    .loading-spinner {
+      width: 30px;
+      height: 30px;
+      border: 3px solid rgba(8, 145, 178, 0.2);
+      border-radius: 50%;
+      border-top-color: #0891b2;
+      animation: spin 1s ease-in-out infinite;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-gray-50 font-sans">
+  <!-- 顶部导航栏 -->
+  <nav class="bg-gradient-to-r from-blue-600 to-cyan-500 text-white shadow-lg">
+    <div class="container mx-auto px-4 py-4">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+          <i data-lucide="droplets" class="w-8 h-8 text-white"></i>
+          <div>
+            <h1 class="text-2xl font-bold">基于RDKX5与火山引擎的渔场管理系统</h1>
+            <p class="text-sm text-blue-100">实时监测 · 智能管理 · 数据分析</p>
+          </div>
+        </div>
+        <div class="text-sm text-blue-100">2025版</div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container mx-auto px-4 py-6 max-w-7xl page-content">
+    <!-- 标签页导航 -->
+    <div class="bg-white rounded-lg shadow-sm mb-6">
+      <div class="flex border-b">
+        <button id="tab-monitoring" class="px-6 py-4 font-medium text-blue-600 border-b-2 border-blue-600 flex items-center">
+          <i data-lucide="activity" class="w-5 h-5 mr-2"></i>
+          监测页面
+        </button>
+        <button id="tab-control" class="px-6 py-4 font-medium text-gray-500 flex items-center hover:text-gray-700">
+          <i data-lucide="sliders" class="w-5 h-5 mr-2"></i>
+          控制页面
+        </button>
+        <button id="tab-ai" class="px-6 py-4 font-medium text-gray-500 flex items-center hover:text-gray-700">
+          <i data-lucide="brain" class="w-5 h-5 mr-2"></i>
+          AI助手
+        </button>
+      </div>
+    </div>
+
+    <!-- 监测页面 -->
+    <div id="monitoring-tab" class="space-y-6">
+
+
+      <!-- 主要信息卡片 -->
+      <div class="bg-white rounded-lg shadow-sm p-6">
+
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- 实时水质信息 -->
+          <div>
+            <h3 class="text-lg font-medium mb-4 flex items-center text-gray-800">
+              <i data-lucide="activity" class="w-5 h-5 mr-2 text-blue-600"></i>
+              实时水质信息
+            </h3>
+            <div class="grid grid-cols-2 lg:grid-cols-3 gap-4">
+              <div class="water-quality-card temperature">
+                <div class="flex items-center mb-3">
+                  <div class="water-quality-icon">
+                    <i data-lucide="thermometer" class="w-4 h-4 text-red-500"></i>
+                  </div>
+                  <span class="water-quality-label">水温</span>
+                </div>
+                <div class="water-quality-value" id="temperature">24.5<span class="water-quality-unit">°C</span></div>
+              </div>
+              <div class="water-quality-card oxygen">
+                <div class="flex items-center mb-3">
+                  <div class="water-quality-icon">
+                    <i data-lucide="droplet" class="w-4 h-4 text-blue-500"></i>
+                  </div>
+                  <span class="water-quality-label">溶解氧含量</span>
+                </div>
+                <div class="water-quality-value" id="oxygen">6.8<span class="water-quality-unit">mg/L</span></div>
+              </div>
+              <div class="water-quality-card ph">
+                <div class="flex items-center mb-3">
+                  <div class="water-quality-icon">
+                    <i data-lucide="fish" class="w-4 h-4 text-teal-500"></i>
+                  </div>
+                  <span class="water-quality-label">pH值</span>
+                </div>
+                <div class="water-quality-value" id="ph-value">7.2</div>
+              </div>
+              <div class="water-quality-card tds">
+                <div class="flex items-center mb-3">
+                  <div class="water-quality-icon">
+                    <i data-lucide="zap" class="w-4 h-4 text-purple-500"></i>
+                  </div>
+                  <span class="water-quality-label">TDS值</span>
+                </div>
+                <div class="water-quality-value" id="tds-value">320<span class="water-quality-unit">ppm</span></div>
+              </div>
+              <div class="water-quality-card turbidity">
+                <div class="flex items-center mb-3">
+                  <div class="water-quality-icon">
+                    <i data-lucide="eye" class="w-4 h-4 text-amber-500"></i>
+                  </div>
+                  <span class="water-quality-label">浊度</span>
+                </div>
+                <div class="water-quality-value" id="turbidity">2.3<span class="water-quality-unit">NTU</span></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 水质变化趋势 -->
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="chart-title">水质变化趋势</h3>
+              <div class="flex items-center space-x-2">
+                <select class="chart-selector form-input">
+                  <option>溶解氧含量</option>
+                  <option>水温</option>
+                  <option>pH值</option>
+                  <option>TDS值</option>
+                  <option>浊度</option>
+                </select>
+                <select class="chart-selector form-input">
+                  <option>近24小时</option>
+                  <option>近7天</option>
+                  <option>近30天</option>
+                </select>
+              </div>
+            </div>
+            <div class="chart-container" id="water-chart"></div>
+            <div class="mt-4 flex justify-end">
+              <button class="predict-btn" id="predict-water-quality-btn">
+                <i data-lucide="trending-up" class="w-4 h-4 predict-btn-icon"></i>
+                <span>预测水质</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MQTT数据显示卡片 -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- 定位数据卡片 -->
+        <div class="bg-white rounded-lg shadow-sm p-6">
+          <h3 class="text-lg font-medium mb-4 flex items-center text-gray-800">
+            <i data-lucide="map-pin" class="w-5 h-5 mr-2 text-green-600"></i>
+            实时定位信息
+          </h3>
+          <div class="space-y-3">
+            <div class="flex justify-between">
+              <span class="text-gray-600">纬度:</span>
+              <span id="position-latitude" class="font-mono">0.000000°</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-600">经度:</span>
+              <span id="position-longitude" class="font-mono">0.000000°</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-600">高度:</span>
+              <span id="position-altitude" class="font-mono">0.0m</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-600">速度:</span>
+              <span id="position-speed" class="font-mono">0.0 m/s</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-600">航向:</span>
+              <span id="position-course" class="font-mono">0.0°</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-600">卫星数:</span>
+              <span id="position-satellites" class="font-mono">0</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-600">状态:</span>
+              <span id="position-status" class="text-red-500">等待数据</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- AI检测数据卡片 -->
+        <div class="bg-white rounded-lg shadow-sm p-6">
+          <h3 class="text-lg font-medium mb-4 flex items-center text-gray-800">
+            <i data-lucide="eye" class="w-5 h-5 mr-2 text-purple-600"></i>
+            AI检测状态
+          </h3>
+          <div class="space-y-3">
+            <div class="flex justify-between">
+              <span class="text-gray-600">病害检测:</span>
+              <span id="ai-disease-detected" class="text-green-500">正常</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-600">检测数量:</span>
+              <span id="ai-detection-count" class="font-mono">0</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-600">最高置信度:</span>
+              <span id="ai-max-confidence" class="font-mono">0%</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-600">状态:</span>
+              <span id="ai-status" class="text-blue-500">等待数据</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 系统状态卡片 -->
+        <div class="bg-white rounded-lg shadow-sm p-6">
+          <h3 class="text-lg font-medium mb-4 flex items-center text-gray-800">
+            <i data-lucide="cpu" class="w-5 h-5 mr-2 text-orange-600"></i>
+            系统状态
+          </h3>
+          <div class="space-y-3">
+            <div class="flex justify-between">
+              <span class="text-gray-600">导航状态:</span>
+              <span id="system-nav-state" class="font-mono">未知</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-600">系统运行:</span>
+              <span id="system-running" class="text-red-500">停止</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-600">电池电量:</span>
+              <span id="system-battery" class="font-mono">0%</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-600">CPU使用率:</span>
+              <span id="system-cpu" class="font-mono">0%</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-600">内存使用率:</span>
+              <span id="system-memory" class="font-mono">0%</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-600">温度:</span>
+              <span id="system-temperature" class="font-mono">0°C</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 远程控制面板 -->
+      <div class="bg-white rounded-lg shadow-sm p-6">
+        <h3 class="text-lg font-medium mb-6 flex items-center text-gray-800">
+          <i data-lucide="gamepad-2" class="w-5 h-5 mr-2 text-blue-600"></i>
+          远程控制面板
+        </h3>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <!-- 导航控制面板 -->
+          <div class="control-panel">
+            <h4 class="control-panel-title">
+              <i data-lucide="navigation" class="w-4 h-4 mr-2"></i>
+              导航控制
+            </h4>
+            <div class="space-y-3">
+              <div class="grid grid-cols-2 gap-2">
+                <input type="number" id="target-lat" placeholder="纬度" class="form-input text-sm" step="0.000001">
+                <input type="number" id="target-lng" placeholder="经度" class="form-input text-sm" step="0.000001">
+              </div>
+              <input type="number" id="target-alt" placeholder="高度(m)" class="form-input text-sm" value="0">
+              <button class="control-btn control-btn-primary w-full" onclick="setTarget()">
+                <i data-lucide="map-pin" class="w-4 h-4 mr-1"></i>
+                设置目标
+              </button>
+              <div class="grid grid-cols-2 gap-2">
+                <button class="control-btn control-btn-success" onclick="startNavigation()">
+                  <i data-lucide="play" class="w-4 h-4 mr-1"></i>
+                  开始导航
+                </button>
+                <button class="control-btn control-btn-warning" onclick="stopNavigation()">
+                  <i data-lucide="stop" class="w-4 h-4 mr-1"></i>
+                  停止导航
+                </button>
+              </div>
+              <button class="control-btn control-btn-info w-full" onclick="getPosition()">
+                <i data-lucide="crosshair" class="w-4 h-4 mr-1"></i>
+                获取位置
+              </button>
+            </div>
+          </div>
+
+          <!-- 投药控制面板 -->
+          <div class="control-panel">
+            <h4 class="control-panel-title">
+              <i data-lucide="droplet" class="w-4 h-4 mr-2"></i>
+              投药控制
+            </h4>
+            <div class="space-y-3">
+              <select id="medication-bay" class="form-input text-sm">
+                <option value="1">药仓1</option>
+                <option value="2">药仓2</option>
+              </select>
+              <input type="number" id="medication-volume" placeholder="投药量(ml)" class="form-input text-sm" value="100" min="1" max="1000">
+              <input type="number" id="medication-duration" placeholder="持续时间(秒)" class="form-input text-sm" value="30" min="1" max="300">
+              <div class="grid grid-cols-2 gap-2">
+                <button class="control-btn control-btn-success" onclick="startMedication()">
+                  <i data-lucide="play" class="w-4 h-4 mr-1"></i>
+                  开始投药
+                </button>
+                <button class="control-btn control-btn-warning" onclick="stopMedication()">
+                  <i data-lucide="stop" class="w-4 h-4 mr-1"></i>
+                  停止投药
+                </button>
+              </div>
+              <button class="control-btn control-btn-info w-full" onclick="getMedicationStatus()">
+                <i data-lucide="info" class="w-4 h-4 mr-1"></i>
+                查询状态
+              </button>
+            </div>
+          </div>
+
+          <!-- 系统控制面板 -->
+          <div class="control-panel">
+            <h4 class="control-panel-title">
+              <i data-lucide="settings" class="w-4 h-4 mr-2"></i>
+              系统控制
+            </h4>
+            <div class="space-y-3">
+              <select id="system-module" class="form-input text-sm">
+                <option value="sensor">传感器模块</option>
+                <option value="navigation">导航模块</option>
+                <option value="ai">AI检测模块</option>
+                <option value="camera">摄像头模块</option>
+              </select>
+              <div class="grid grid-cols-2 gap-2">
+                <button class="control-btn control-btn-success" onclick="startModule()">
+                  <i data-lucide="power" class="w-4 h-4 mr-1"></i>
+                  启动模块
+                </button>
+                <button class="control-btn control-btn-warning" onclick="stopModule()">
+                  <i data-lucide="power-off" class="w-4 h-4 mr-1"></i>
+                  停止模块
+                </button>
+              </div>
+              <button class="control-btn control-btn-info w-full" onclick="getSystemStatus()">
+                <i data-lucide="activity" class="w-4 h-4 mr-1"></i>
+                系统状态
+              </button>
+            </div>
+          </div>
+
+          <!-- 紧急控制面板 -->
+          <div class="control-panel">
+            <h4 class="control-panel-title">
+              <i data-lucide="alert-triangle" class="w-4 h-4 mr-2"></i>
+              紧急控制
+            </h4>
+            <div class="space-y-3">
+              <button class="control-btn control-btn-danger w-full" onclick="emergencyStop()">
+                <i data-lucide="octagon" class="w-4 h-4 mr-1"></i>
+                紧急停止
+              </button>
+              <div class="text-xs text-gray-500 text-center mt-2">
+                紧急停止将立即中断所有操作
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 操作日志面板 -->
+      <div class="bg-white rounded-lg shadow-sm p-6">
+        <h3 class="text-lg font-medium mb-4 flex items-center text-gray-800">
+          <i data-lucide="scroll-text" class="w-5 h-5 mr-2 text-gray-600"></i>
+          操作日志
+        </h3>
+        <div id="operation-log" class="bg-gray-50 rounded-lg p-4 h-32 overflow-y-auto text-sm">
+          <div class="text-gray-500">等待操作记录...</div>
+        </div>
+        <div class="mt-2 flex justify-end">
+          <button class="text-sm text-blue-600 hover:text-blue-800" onclick="clearLog()">
+            <i data-lucide="trash-2" class="w-4 h-4 mr-1"></i>
+            清空日志
+          </button>
+        </div>
+      </div>
+
+      <!-- 底部信息卡片 -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="bg-white rounded-lg shadow-sm p-6 glass-card" style="min-height: 350px;">
+          <h3 class="text-lg font-medium mb-4 flex items-center text-gray-800 section-header">
+            <i data-lucide="alert-triangle" class="w-5 h-5 mr-2 text-amber-500"></i>
+            报警信息
+          </h3>
+          <div class="space-y-4 h-64 overflow-y-auto pr-2 custom-scrollbar" id="alert-container">
+            <!-- 静态报警信息内容 -->
+            <div class="alert-card alert-critical pulsing">
+              <div class="flex items-start">
+                <i data-lucide="alert-circle" class="w-5 h-5 mr-3 text-red-500 alert-icon"></i>
+                <div class="flex-1">
+                  <p class="text-sm font-medium text-red-800">发现细菌性疾病鱼体</p>
+                  <p class="text-xs text-gray-500 mt-1">5分钟前</p>
+                  <p class="text-xs mt-2 text-red-700">检测到3条鱼游动异常，疑似细菌性鳃病</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="alert-card alert-warning pulsing">
+              <div class="flex items-start">
+                <i data-lucide="alert-triangle" class="w-5 h-5 mr-3 text-yellow-500 alert-icon"></i>
+                <div class="flex-1">
+                  <p class="text-sm font-medium text-yellow-800">水温过高</p>
+                  <p class="text-xs text-gray-500 mt-1">15分钟前</p>
+                  <p class="text-xs mt-2 text-yellow-700">当前水温27.8°C，超过预设阈值(26.5°C)</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="alert-card alert-warning">
+              <div class="flex items-start">
+                <i data-lucide="alert-triangle" class="w-5 h-5 mr-3 text-yellow-500 alert-icon"></i>
+                <div class="flex-1">
+                  <p class="text-sm font-medium text-yellow-800">溶氧量偏低</p>
+                  <p class="text-xs text-gray-500 mt-1">30分钟前</p>
+                  <p class="text-xs mt-2 text-yellow-700">当前溶氧量3.8mg/L，低于安全值(5.0mg/L)</p>
+                </div>
+              </div>
+            </div>
+
+
+          </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-sm p-6 glass-card" style="min-height: 350px;">
+          <h3 class="text-lg font-medium mb-4 flex items-center text-gray-800 section-header">
+            <i data-lucide="video" class="w-5 h-5 mr-2 text-blue-600"></i>
+            实时监控
+          </h3>
+          <div class="aspect-video monitor-card flex items-center justify-center" style="min-height: 200px;">
+            <div class="text-gray-400 flex flex-col items-center" id="monitor-display">
+              <i data-lucide="video-off" class="w-10 h-10 mb-2 text-gray-300"></i>
+              <span>监控画面 - 鱼池 A-001</span>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="bg-white rounded-lg shadow-sm p-6 glass-card" style="min-height: 350px;">
+          <h3 class="text-lg font-medium mb-4 flex items-center text-gray-800 section-header">
+            <i data-lucide="clipboard-list" class="w-5 h-5 mr-2 text-green-500"></i>
+            应急处理日志
+          </h3>
+          <div class="space-y-4 h-64 overflow-y-auto pr-2 custom-scrollbar" id="emergency-log-container">
+            <!-- 静态应急处理日志内容 -->
+            <div class="log-card">
+              <div class="flex items-center justify-between">
+                <div class="flex-1">
+                  <div class="flex items-center">
+                    <span class="font-medium text-gray-800">投放亚甲基蓝</span>
+                    <span class="ml-2 status-badge success">200ml</span>
+                  </div>
+                  <p class="text-xs text-gray-500 mt-1">今天 14:30</p>
+                  <p class="text-sm text-gray-600 mt-2">发现鱼体细菌性疾病</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 控制页面 -->
+    <div id="control-tab" class="space-y-6 hidden">
+
+
+      <div class="device-status-card">
+        <h3 class="text-lg font-medium mb-4 flex items-center text-gray-800 section-header">
+          <i data-lucide="cpu" class="w-5 h-5 mr-2 text-blue-600"></i>
+          设备运行状态
+        </h3>
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center space-x-4">
+            <div class="text-lg font-medium gradient-border inline-block pb-1" id="device-id-display">设备编号: 1号机</div>
+            <div class="device-status-indicator online" id="device-status-badge">
+              <span class="device-status-dot bg-green-500"></span>
+              运行中
+            </div>
+          </div>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="device-info-card ip-card">
+            <div class="flex items-center text-gray-500 mb-2">
+              <i data-lucide="cpu" class="w-4 h-4 mr-1 text-cyan-600"></i>
+              <span class="text-sm">IP地址</span>
+            </div>
+            <div class="text-lg font-semibold" id="device-ip">192.168.1.101</div>
+          </div>
+          <div class="device-info-card speed-card">
+            <div class="flex items-center text-gray-500 mb-2">
+              <i data-lucide="gauge" class="w-4 h-4 mr-1 text-amber-500"></i>
+              <span class="text-sm">航行速度</span>
+            </div>
+            <div class="text-lg font-semibold" id="cruise-speed">中速</div>
+            <div class="flex space-x-2 mt-3">
+              <button class="speed-option flex-1" data-speed="low">低速</button>
+              <button class="speed-option flex-1 active" data-speed="medium">中速</button>
+              <button class="speed-option flex-1" data-speed="high">高速</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 定点巡航 -->
+      <div class="glass-card rounded-lg shadow-custom p-6 mb-6">
+          <h3 class="text-lg font-medium mb-4 flex items-center text-gray-700 section-header">
+            <i data-lucide="map" class="w-5 h-5 mr-2 text-cyan-600"></i> 定点巡航
+          </h3>
+          <div id="map-container" class="map-container h-72 md:h-80 lg:h-[22rem]"></div>
+          <div class="mt-4 flex flex-wrap space-x-2 space-y-2 sm:space-y-0">
+            <button class="sm:flex-none flex items-center space-x-2 btn-primary btn-feedback px-4 py-2 rounded-lg" id="start-cruise-btn">
+              <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+              <span>开始巡航</span>
+            </button>
+            <button class="sm:flex-none flex items-center space-x-2 btn-secondary btn-feedback px-4 py-2 rounded-lg" id="set-path-btn">
+              <i data-lucide="settings" class="w-4 h-4"></i>
+              <span>设置路径</span>
+            </button>
+            <button class="sm:flex-none flex items-center space-x-2 btn-secondary btn-feedback px-4 py-2 rounded-lg">
+              <i data-lucide="save" class="w-4 h-4"></i>
+              <span>保存路径</span>
+            </button>
+            <div class="flex-grow"></div>
+            <button class="sm:flex-none flex items-center space-x-2 bg-gray-100 text-gray-600 hover:bg-gray-200 px-4 py-2 rounded-lg">
+              <i data-lucide="eye" class="w-4 h-4"></i>
+              <span>查看历史</span>
+            </button>
+          </div>
+        </div>
+
+      <!-- 药品投放 -->
+      <div class="space-y-6">
+        <h3 class="text-lg font-medium flex items-center text-gray-700 section-header">
+          <i data-lucide="flask" class="w-5 h-5 mr-2 text-purple-500"></i> 药品投放
+        </h3>
+
+        <!-- 1号药仓 -->
+        <div class="medicine-tank-1">
+          <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center">
+              <div class="tank-indicator tank-1"></div>
+              <h4 class="text-lg font-medium text-gray-700">1号药仓</h4>
+            </div>
+            <div class="flex items-center space-x-2">
+              <span class="text-sm text-gray-500">当前容量:</span>
+              <span id="medicine-1-capacity" class="capacity-indicator high">高</span>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm text-gray-600 mb-2">药品名称</label>
+              <select id="medicine-1-select" class="medicine-selector form-input mb-2">
+                <option value="">请选择药品</option>
+                <option value="亚甲基蓝">亚甲基蓝</option>
+                <option value="聚维酮碘">聚维酮碘</option>
+                <option value="戊二醛">戊二醛</option>
+                <option value="过氧化氢">过氧化氢</option>
+                <option value="高锰酸钾">高锰酸钾</option>
+                <option value="福尔马林">福尔马林</option>
+                <option value="custom">手动输入</option>
+              </select>
+              <input type="text" id="medicine-1-custom" class="medicine-input form-input hidden" placeholder="请输入药品名称">
+            </div>
+
+            <div>
+              <label class="block text-sm text-gray-600 mb-2">用药标准 (ml/亩米)</label>
+              <input type="number" id="medicine-1-dosage" class="medicine-input form-input" placeholder="请输入用药标准" step="0.1">
+            </div>
+          </div>
+
+          <div id="medicine-1-display" class="medicine-display">
+            <div class="text-gray-400 text-center">尚未设置1号药仓</div>
+          </div>
+
+          <div class="mt-4">
+            <button class="tank-confirm-btn tank-1-btn" id="add-medicine-1-btn">
+              确认设置1号药仓
+            </button>
+          </div>
+        </div>
+
+        <!-- 2号药仓 -->
+        <div class="medicine-tank-2">
+          <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center">
+              <div class="tank-indicator tank-2"></div>
+              <h4 class="text-lg font-medium text-gray-700">2号药仓</h4>
+            </div>
+            <div class="flex items-center space-x-2">
+              <span class="text-sm text-gray-500">当前容量:</span>
+              <span id="medicine-2-capacity" class="capacity-indicator medium">中</span>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm text-gray-600 mb-2">药品名称</label>
+              <select id="medicine-2-select" class="medicine-selector form-input mb-2">
+                <option value="">请选择药品</option>
+                <option value="亚甲基蓝">亚甲基蓝</option>
+                <option value="聚维酮碘">聚维酮碘</option>
+                <option value="戊二醛">戊二醛</option>
+                <option value="过氧化氢">过氧化氢</option>
+                <option value="高锰酸钾">高锰酸钾</option>
+                <option value="福尔马林">福尔马林</option>
+                <option value="custom">手动输入</option>
+              </select>
+              <input type="text" id="medicine-2-custom" class="medicine-input form-input hidden" placeholder="请输入药品名称">
+            </div>
+
+            <div>
+              <label class="block text-sm text-gray-600 mb-2">用药标准 (ml/亩米)</label>
+              <input type="number" id="medicine-2-dosage" class="medicine-input form-input" placeholder="请输入用药标准" step="0.1">
+            </div>
+          </div>
+
+          <div id="medicine-2-display" class="medicine-display">
+            <div class="text-gray-400 text-center">尚未设置2号药仓</div>
+          </div>
+
+          <div class="mt-4">
+            <button class="tank-confirm-btn tank-2-btn" id="add-medicine-2-btn">
+              确认设置2号药仓
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI助手页面 -->
+    <div id="ai-tab" class="space-y-6 hidden">
+      <div class="bg-white rounded-lg shadow-sm p-6 h-[600px] flex flex-col">
+          <!-- 在AI助手顶部工具栏中添加清除聊天按钮 -->
+<div class="flex items-center justify-between mb-4">
+  <h3 class="text-lg font-medium flex items-center text-gray-800">
+    <i data-lucide="brain" class="w-5 h-5 mr-2 text-blue-600"></i>
+    AI助手
+  </h3>
+  <div class="flex items-center space-x-3">
+    <!-- 添加清除聊天按钮 -->
+    <button id="clear-chat" class="text-gray-400 hover:text-gray-600">
+      <i data-lucide="trash-2" class="w-4 h-4"></i>
+    </button>
+    <div class="text-xs text-gray-500">
+      <span id="backend-status" class="inline-flex items-center">
+        <i data-lucide="server" class="w-3.5 h-3.5 mr-1 text-gray-400"></i>
+        <span>检查中...</span>
+      </span>
+    </div>
+  
+    <span class="status-indicator online">
+      <span class="w-1.5 h-1.5 rounded-full bg-green-500 mr-1.5 animate-pulse"></span>
+      智能助手在线
+    </span>
+    <button class="text-gray-400 hover:text-gray-600 backend-settings">
+      <i data-lucide="settings" class="w-4 h-4"></i>
+    </button>
+  </div>
+</div>
+
+        <div class="chat-container" id="chat-messages">
+          <!-- 欢迎消息 -->
+          <div class="flex flex-col space-y-2 mb-6">
+            <div class="flex items-start mb-4 message-bubble">
+              <div class="ai-avatar">
+                <i data-lucide="bot" class="w-5 h-5"></i>
+              </div>
+              <div class="ai-bubble">
+                <p class="text-gray-700">您好！我是智能渔场水质分析助手。我可以帮您解答关于水质监测、设备运行和养殖技术的问题。</p>
+              </div>
+            </div>
+
+            <div class="flex items-start mb-4 message-bubble">
+              <div class="ai-avatar">
+                <i data-lucide="bot" class="w-5 h-5"></i>
+              </div>
+              <div class="ai-bubble">
+                <p class="text-gray-700">检测到溶解氧偏低。您可以询问我详情或处理建议。</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- AI思考状态指示器 -->
+          <div id="ai-thinking" class="flex items-start mb-4 hidden">
+            <div class="ai-avatar">
+              <i data-lucide="bot" class="w-5 h-5"></i>
+            </div>
+            <div class="ai-thinking-indicator">
+              <div class="thinking-dots">
+                <div class="thinking-dot"></div>
+                <div class="thinking-dot"></div>
+                <div class="thinking-dot"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 常见问题建议 -->
+        <div class="mb-3 flex flex-wrap gap-2">
+          <button class="quick-question">
+            溶解氧低如何处理？
+          </button>
+          <button class="quick-question">
+            水温过高的应对措施
+          </button>
+          <button class="quick-question">
+            最适合投放哪种药物？
+          </button>
+          <button class="quick-question">
+            水质指标正常范围
+          </button>
+        </div>
+
+        <!-- 输入区域 -->
+        <div class="flex space-x-2 relative">
+          <input type="text" id="ai-input" class="ai-input form-input pr-12" placeholder="输入您的问题...">
+
+          <!-- 语音输入按钮 -->
+          <button id="voice-input-btn" class="voice-btn absolute right-[70px] top-1/2 transform -translate-y-1/2">
+            <i data-lucide="mic" class="w-5 h-5"></i>
+          </button>
+
+          <button id="send-message-btn" class="send-btn">
+            <i data-lucide="send" class="w-5 h-5"></i>
+          </button>
+        </div>
+        
+        <!-- 语音输入指示器 -->
+        <div id="voice-indicator" class="hidden mt-2 text-xs text-center text-blue-600 animate-pulse">
+          <span class="flex items-center justify-center">
+            <i data-lucide="mic" class="w-4 h-4 mr-1"></i> 正在录音... 点击停止
+          </span>
+        </div>
+        
+      <!-- 后端设置对话框 -->
+<div id="backend-settings-dialog" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+  <div class="bg-white rounded-lg p-6 w-96 max-w-[90%] shadow-xl">
+    <div class="flex justify-between items-center mb-4">
+      <h3 class="text-lg font-medium">Coze API 连接设置</h3>
+      <button class="text-gray-400 hover:text-gray-600 close-dialog">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+    </div>
+    <div class="space-y-4">
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">后端URL</label>
+        <input type="text" id="backend-url" class="w-full border rounded px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 form-input" value="http://localhost:5001" placeholder="例如: http://localhost:5001">
+      </div>
+      <div class="text-xs text-gray-500">
+        <p>• 确保安装了必要的依赖：<code class="bg-gray-100 px-1 py-0.5 rounded">pip install flask flask-cors requests python-dotenv</code></p>
+        <p>• Coze API设置已在后端配置</p>
+        <p class="mt-1">• 启动后端：<code class="bg-gray-100 px-1 py-0.5 rounded">python app.py</code></p>
+      </div>
+      <div class="pt-2 flex justify-end space-x-2">
+        <button class="test-connection px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm rounded">测试连接</button>
+        <button class="save-settings px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded">保存设置</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+
+  <script src="前端.js"></script>
+  
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // 初始化标签页
+      const tabBtns = document.querySelectorAll('[id^="tab-"]');
+      const tabContents = document.querySelectorAll('[id$="-tab"]');
+      
+      tabBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+          const tabName = this.id.replace('tab-', '');
+          
+          // 移除所有标签页的active样式
+          tabBtns.forEach(tab => {
+            tab.classList.remove('border-b-2', 'border-blue-600', 'text-blue-600');
+            tab.classList.add('text-gray-500');
+          });
+          
+          // 添加当前标签页的active样式
+          this.classList.add('border-b-2', 'border-blue-600', 'text-blue-600');
+          this.classList.remove('text-gray-500');
+          
+          // 隐藏所有内容
+          tabContents.forEach(content => {
+            content.classList.add('hidden');
+          });
+          
+          // 显示当前内容
+          document.getElementById(tabName + '-tab').classList.remove('hidden');
+        });
+      });
+      
+      // 初始化药品标签切换
+      const solidBtn = document.getElementById('solid-medicine-tab');
+      const liquidBtn = document.getElementById('liquid-medicine-tab');
+      const solidPanel = document.getElementById('solid-medicine-panel');
+      const liquidPanel = document.getElementById('liquid-medicine-panel');
+      
+      if (solidBtn && liquidBtn) {
+        solidBtn.addEventListener('click', function() {
+          solidBtn.classList.add('bg-blue-50', 'text-blue-600', 'border-blue-200', 'active');
+          solidBtn.classList.remove('bg-gray-100', 'text-gray-600', 'border-gray-200');
+          
+          liquidBtn.classList.add('bg-gray-100', 'text-gray-600', 'border-gray-200');
+          liquidBtn.classList.remove('bg-blue-50', 'text-blue-600', 'border-blue-200', 'active');
+          
+          solidPanel.classList.remove('hidden');
+          liquidPanel.classList.add('hidden');
+        });
+        
+        liquidBtn.addEventListener('click', function() {
+          liquidBtn.classList.add('bg-blue-50', 'text-blue-600', 'border-blue-200', 'active');
+          liquidBtn.classList.remove('bg-gray-100', 'text-gray-600', 'border-gray-200');
+          
+          solidBtn.classList.add('bg-gray-100', 'text-gray-600', 'border-gray-200');
+          solidBtn.classList.remove('bg-blue-50', 'text-blue-600', 'border-blue-200', 'active');
+          
+          liquidPanel.classList.remove('hidden');
+          solidPanel.classList.add('hidden');
+        });
+      }
+      
+      // 初始化药品添加功能
+      initMedicineInput();
+      
+      // 地图初始化已移至前端.js中的initMapWithConfig()函数
+      
+      // 初始化航行速度选择按钮
+      initSpeedOptions();
+
+      // 初始化预测水质按钮
+      initPredictWaterQuality();
+
+      // 初始化图标
+      if (window.lucide) {
+        lucide.createIcons();
+      }
+    });
+    
+    // 初始化药品添加功能
+    function initMedicineInput() {
+      const medicine1Select = document.getElementById('medicine-1-select');
+      const medicine1Custom = document.getElementById('medicine-1-custom');
+      const medicine1Dosage = document.getElementById('medicine-1-dosage');
+      const medicine1Display = document.getElementById('medicine-1-display');
+
+      const medicine2Select = document.getElementById('medicine-2-select');
+      const medicine2Custom = document.getElementById('medicine-2-custom');
+      const medicine2Dosage = document.getElementById('medicine-2-dosage');
+      const medicine2Display = document.getElementById('medicine-2-display');
+
+      const addMedicine1Btn = document.getElementById('add-medicine-1-btn');
+      const addMedicine2Btn = document.getElementById('add-medicine-2-btn');
+
+      // 药仓数据
+      let medicine1Data = { name: '', dosage: '' };
+      let medicine2Data = { name: '', dosage: '' };
+
+      // 处理药品选择变化
+      if (medicine1Select) {
+        medicine1Select.addEventListener('change', function() {
+          if (this.value === 'custom') {
+            medicine1Custom.classList.remove('hidden');
+            medicine1Custom.focus();
+          } else {
+            medicine1Custom.classList.add('hidden');
+            medicine1Custom.value = '';
+          }
+        });
+      }
+
+      if (medicine2Select) {
+        medicine2Select.addEventListener('change', function() {
+          if (this.value === 'custom') {
+            medicine2Custom.classList.remove('hidden');
+            medicine2Custom.focus();
+          } else {
+            medicine2Custom.classList.add('hidden');
+            medicine2Custom.value = '';
+          }
+        });
+      }
+
+      // 1号药仓确认设置按钮
+      if (addMedicine1Btn) {
+        addMedicine1Btn.addEventListener('click', function() {
+          const medicine1Name = medicine1Select.value === 'custom' ? medicine1Custom.value.trim() : medicine1Select.value;
+          const medicine1DosageValue = medicine1Dosage.value.trim();
+
+          if (medicine1Name && medicine1DosageValue) {
+            medicine1Data = { name: medicine1Name, dosage: medicine1DosageValue };
+            updateMedicineDisplay(medicine1Display, medicine1Data, '1号药仓');
+
+            // 调用药品投放API
+            const medicineData = {
+              medicine_1: medicine1Data,
+              medicine_2: medicine2Data,
+              location: '华中科技大学渔场',
+              timestamp: new Date().toISOString()
+            };
+
+            fetch('/api/medicine/deploy', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(medicineData)
+            }).then(response => response.json())
+            .then(data => {
+              if (data.status === 'success') {
+                showMessage(`1号药仓设置成功，任务ID: ${data.task_id}`, 'success');
+                // 模拟容量变化
+                updateCapacityDisplay('medicine-1-capacity', 'medium');
+              } else {
+                showMessage('1号药仓设置成功，但API调用失败', 'warning');
+              }
+            }).catch(error => {
+              console.log('API调用失败:', error);
+              showMessage('1号药仓设置成功，但API调用失败', 'warning');
+            });
+          } else {
+            showMessage('请设置1号药仓的药品名称和用药标准', 'warning');
+          }
+        });
+      }
+
+      // 2号药仓确认设置按钮
+      if (addMedicine2Btn) {
+        addMedicine2Btn.addEventListener('click', function() {
+          const medicine2Name = medicine2Select.value === 'custom' ? medicine2Custom.value.trim() : medicine2Select.value;
+          const medicine2DosageValue = medicine2Dosage.value.trim();
+
+          if (medicine2Name && medicine2DosageValue) {
+            medicine2Data = { name: medicine2Name, dosage: medicine2DosageValue };
+            updateMedicineDisplay(medicine2Display, medicine2Data, '2号药仓');
+
+            // 调用药品投放API
+            const medicineData = {
+              medicine_1: medicine1Data,
+              medicine_2: medicine2Data,
+              location: '华中科技大学渔场',
+              timestamp: new Date().toISOString()
+            };
+
+            fetch('/api/medicine/deploy', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(medicineData)
+            }).then(response => response.json())
+            .then(data => {
+              if (data.status === 'success') {
+                showMessage(`2号药仓设置成功，任务ID: ${data.task_id}`, 'success');
+                // 模拟容量变化
+                updateCapacityDisplay('medicine-2-capacity', 'low');
+              } else {
+                showMessage('2号药仓设置成功，但API调用失败', 'warning');
+              }
+            }).catch(error => {
+              console.log('API调用失败:', error);
+              showMessage('2号药仓设置成功，但API调用失败', 'warning');
+            });
+          } else {
+            showMessage('请设置2号药仓的药品名称和用药标准', 'warning');
+          }
+        });
+      }
+
+      // 更新容量显示
+      function updateCapacityDisplay(capacityId, level) {
+        const capacityElement = document.getElementById(capacityId);
+        if (!capacityElement) return;
+
+        capacityElement.className = 'px-2 py-1 rounded-full text-xs font-medium';
+
+        switch(level) {
+          case 'high':
+            capacityElement.classList.add('bg-green-100', 'text-green-800');
+            capacityElement.textContent = '高';
+            break;
+          case 'medium':
+            capacityElement.classList.add('bg-yellow-100', 'text-yellow-800');
+            capacityElement.textContent = '中';
+            break;
+          case 'low':
+            capacityElement.classList.add('bg-red-100', 'text-red-800');
+            capacityElement.textContent = '低';
+            break;
+        }
+      }
+
+      // 更新药品显示
+      function updateMedicineDisplay(displayElement, medicineData, type) {
+        if (!displayElement) return;
+
+        if (!medicineData.name || !medicineData.dosage) {
+          displayElement.innerHTML = `<div class="text-gray-400 text-center">尚未设置${type}</div>`;
+        } else {
+          displayElement.innerHTML = `
+            <div class="flex justify-between items-center">
+              <div>
+                <div class="font-medium">${medicineData.name}</div>
+                <div class="text-xs text-gray-500 mt-1">用药标准: ${medicineData.dosage} ml/亩米</div>
+              </div>
+              <button class="text-red-500 hover:text-red-700 text-xs medicine-delete-btn" data-type="${type}">
+                <i data-lucide="trash-2" class="w-4 h-4"></i>
+              </button>
+            </div>
+          `;
+
+          // 初始化删除按钮图标
+          if (window.lucide) {
+            lucide.createIcons();
+          }
+
+          // 添加删除按钮事件
+          const deleteBtn = displayElement.querySelector('.medicine-delete-btn');
+          if (deleteBtn) {
+            deleteBtn.addEventListener('click', function() {
+              const medicineType = this.getAttribute('data-type');
+              if (medicineType === '1号药仓') {
+                medicine1Data = { name: '', dosage: '' };
+                updateMedicineDisplay(medicine1Display, medicine1Data, '1号药仓');
+                medicine1Select.value = '';
+                medicine1Custom.value = '';
+                medicine1Custom.classList.add('hidden');
+                medicine1Dosage.value = '';
+                updateCapacityDisplay('medicine-1-capacity', 'high');
+              } else if (medicineType === '2号药仓') {
+                medicine2Data = { name: '', dosage: '' };
+                updateMedicineDisplay(medicine2Display, medicine2Data, '2号药仓');
+                medicine2Select.value = '';
+                medicine2Custom.value = '';
+                medicine2Custom.classList.add('hidden');
+                medicine2Dosage.value = '';
+                updateCapacityDisplay('medicine-2-capacity', 'medium');
+              }
+            });
+          }
+        }
+      }
+    }
+    
+    // 显示消息提示
+    function showMessage(message, type = 'info') {
+      // 创建消息元素
+      const messageElement = document.createElement('div');
+      messageElement.className = `fixed top-4 right-4 px-4 py-2 rounded-lg shadow-lg z-50 flex items-center transition-all duration-300 transform translate-x-full`;
+      
+      // 根据类型设置样式
+      if (type === 'success') {
+        messageElement.classList.add('bg-green-50', 'text-green-800', 'border-l-4', 'border-green-500');
+        messageElement.innerHTML = `
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-green-500" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+          </svg>
+          ${message}
+        `;
+      } else if (type === 'warning') {
+        messageElement.classList.add('bg-yellow-50', 'text-yellow-800', 'border-l-4', 'border-yellow-500');
+        messageElement.innerHTML = `
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-yellow-500" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+          </svg>
+          ${message}
+        `;
+      } else {
+        messageElement.classList.add('bg-blue-50', 'text-blue-800', 'border-l-4', 'border-blue-500');
+        messageElement.innerHTML = `
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-blue-500" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+          </svg>
+          ${message}
+        `;
+      }
+      
+      // 添加到文档
+      document.body.appendChild(messageElement);
+      
+      // 显示动画
+      setTimeout(() => {
+        messageElement.classList.remove('translate-x-full');
+        messageElement.classList.add('translate-x-0');
+      }, 10);
+      
+      // 3秒后移除
+      setTimeout(() => {
+        messageElement.classList.remove('translate-x-0');
+        messageElement.classList.add('translate-x-full');
+        
+        setTimeout(() => {
+          document.body.removeChild(messageElement);
+        }, 300);
+      }, 3000);
+    }
+    
+    // 地图初始化代码已移至前端.js文件中
+    function initMapLegacy() {
+      console.log('开始初始化地图...');
+      const mapContainer = document.getElementById('map-container');
+      const setPathBtn = document.getElementById('set-path-btn');
+
+      console.log('地图容器:', mapContainer);
+      console.log('AMap对象:', window.AMap);
+
+      if (!mapContainer) {
+        console.error('地图容器未找到');
+        return;
+      }
+
+      if (!window.AMap) {
+        console.error('高德地图API未加载');
+        mapContainer.innerHTML = '<div style="padding:20px;text-align:center;color:red;">高德地图API未加载，请检查网络连接</div>';
+        return;
+      }
+
+      try {
+        // 创建地图实例
+        const map = new AMap.Map('map-container', {
+          zoom: 16,                      // 初始缩放级别
+          center: [114.431280, 30.514498], // 华中科技大学渔场坐标
+          viewMode: '2D',                // 2D视图更稳定
+          mapStyle: 'amap://styles/normal'
+        });
+
+        console.log('地图实例创建成功:', map);
+
+        // 地图加载完成事件
+        map.on('complete', function() {
+          console.log('地图加载完成');
+        });
+
+        // 地图错误事件
+        map.on('error', function(error) {
+          console.error('地图加载错误:', error);
+        });
+
+        // 添加地图控件
+        map.plugin(['AMap.ToolBar', 'AMap.Scale'], function() {
+          map.addControl(new AMap.ToolBar({
+            position: 'RB'
+          }));
+          map.addControl(new AMap.Scale());
+        });
+        
+        // 华中科技大学渔场边界（多边形）- 使用与后端一致的坐标
+        const pondPath = [
+          [114.431280, 30.514498],
+          [114.431341, 30.514523],
+          [114.431376, 30.514591],
+          [114.431389, 30.514617],
+          [114.431405, 30.514683],
+          [114.431350, 30.514646],
+          [114.431314, 30.514584],
+          [114.431280, 30.514498]
+        ];
+        
+        // 绘制鱼池边界
+        const pondPolygon = new AMap.Polygon({
+          path: pondPath,
+          strokeColor: '#3880ff',
+          strokeWeight: 3,
+          strokeOpacity: 0.8,
+          fillColor: '#87CEFA',
+          fillOpacity: 0.3,
+          zIndex: 10
+        });
+        
+        // 将鱼池边界添加到地图
+        map.add(pondPolygon);
+        
+        // 自适应视野到鱼池边界
+        map.setFitView([pondPolygon]);
+        
+        // 巡航点标记数组
+        let cruiseMarkers = [];
+        let isSettingPath = false;
+        
+        // 设置路径按钮点击事件
+        if (setPathBtn) {
+          setPathBtn.addEventListener('click', function() {
+            isSettingPath = !isSettingPath;
+            
+            if (isSettingPath) {
+              // 开始设置路径模式
+              this.classList.remove('btn-secondary');
+              this.classList.add('btn-primary');
+              this.querySelector('span').textContent = '完成设置';
+              
+              // 显示提示信息
+              const infoWindow = new AMap.InfoWindow({
+                content: '点击地图添加巡航点',
+                offset: new AMap.Pixel(0, -25)
+              });
+              
+              infoWindow.open(map, map.getCenter());
+              
+              // 2秒后关闭提示
+              setTimeout(() => {
+                infoWindow.close();
+              }, 2000);
+            } else {
+              // 完成设置路径模式
+              this.classList.remove('btn-primary');
+              this.classList.add('btn-secondary');
+              this.querySelector('span').textContent = '设置路径';
+              
+              // 如果有足够的巡航点，绘制路径
+              if (cruiseMarkers.length > 1) {
+                drawCruisePath();
+              }
+            }
+          });
+        }
+        
+        // 地图点击事件
+        map.on('click', function(e) {
+          if (isSettingPath) {
+            // 创建标记
+            const marker = new AMap.Marker({
+              position: e.lnglat,
+              icon: 'https://webapi.amap.com/theme/v1.3/markers/n/mark_b.png',
+              label: {
+                content: `点${cruiseMarkers.length + 1}`,
+                direction: 'top'
+              },
+              draggable: true,    // 可拖拽
+              cursor: 'move'
+            });
+            
+            // 将标记添加到地图
+            map.add(marker);
+            
+            // 将标记添加到巡航标记数组
+            cruiseMarkers.push(marker);
+            
+            // 标记拖拽结束后重绘路径
+            marker.on('dragend', function() {
+              if (cruiseMarkers.length > 1) {
+                drawCruisePath();
+              }
+            });
+          }
+        });
+        
+        // 巡航路径
+        let cruisePath = null;
+        
+        // 绘制巡航路径
+        function drawCruisePath() {
+          // 如果存在旧路径，先移除
+          if (cruisePath) {
+            map.remove(cruisePath);
+          }
+          
+          // 获取所有标记的位置
+          const path = cruiseMarkers.map(marker => marker.getPosition());
+          
+          // 创建路径
+          cruisePath = new AMap.Polyline({
+            path: path,
+            strokeColor: '#22c55e',
+            strokeWeight: 4,
+            strokeOpacity: 0.7,
+            zIndex: 5,
+            strokeStyle: 'dashed',
+            strokeDasharray: [10, 5]
+          });
+          
+          // 将路径添加到地图
+          map.add(cruisePath);
+        }
+        
+        // 开始巡航按钮点击事件
+        const startCruiseBtn = document.getElementById('start-cruise-btn');
+        if (startCruiseBtn) {
+          startCruiseBtn.addEventListener('click', function() {
+            if (cruiseMarkers.length < 2) {
+              // 显示提示信息
+              const infoWindow = new AMap.InfoWindow({
+                content: '请先设置至少2个巡航点',
+                offset: new AMap.Pixel(0, -25)
+              });
+              
+              infoWindow.open(map, map.getCenter());
+              
+              // 2秒后关闭提示
+              setTimeout(() => {
+                infoWindow.close();
+              }, 2000);
+              
+              return;
+            }
+            
+            // 模拟巡航
+            simulateCruise();
+          });
+        }
+        
+        // 巡航相关变量
+        let cruiseMarker = null;
+        let currentPathIndex = 0;
+        let cruiseInterval = null;
+        
+        // 模拟巡航
+        function simulateCruise() {
+          // 调用真实系统API开始巡航
+          const cruiseData = {
+            location: '华中科技大学渔场',
+            coordinates: cruiseMarkers.map(marker => {
+              const pos = marker.getPosition();
+              return { lng: pos.lng, lat: pos.lat };
+            }),
+            timestamp: new Date().toISOString(),
+            deviceId: 'RDKX5-001'
+          };
+
+          // 发送API请求（示例）
+          fetch('/api/cruise/start', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(cruiseData)
+          }).then(response => {
+            if (response.ok) {
+              showMessage('巡航指令已发送到RDKX5设备', 'success');
+            } else {
+              showMessage('API调用失败，使用模拟模式', 'warning');
+            }
+          }).catch(error => {
+            console.log('API调用失败，使用模拟模式:', error);
+            showMessage('API调用失败，使用模拟模式', 'warning');
+          });
+
+          // 如果存在旧的巡航标记，先移除
+          if (cruiseMarker) {
+            map.remove(cruiseMarker);
+          }
+
+          // 如果存在旧的巡航定时器，先清除
+          if (cruiseInterval) {
+            clearInterval(cruiseInterval);
+          }
+          
+          // 创建巡航标记
+          cruiseMarker = new AMap.Marker({
+            position: cruiseMarkers[0].getPosition(),
+            icon: 'https://webapi.amap.com/theme/v1.3/markers/n/mark_r.png',
+            zIndex: 20
+          });
+          
+          // 将巡航标记添加到地图
+          map.add(cruiseMarker);
+          
+          // 重置当前路径索引
+          currentPathIndex = 0;
+          
+          // 开始巡航动画
+          cruiseInterval = setInterval(() => {
+            // 获取下一个点的索引
+            currentPathIndex = (currentPathIndex + 1) % cruiseMarkers.length;
+            
+            // 获取下一个点的位置
+            const nextPosition = cruiseMarkers[currentPathIndex].getPosition();
+            
+            // 移动巡航标记
+            cruiseMarker.setPosition(nextPosition);
+            
+            // 显示水质监测信息
+            showWaterQualityInfo(nextPosition);
+          }, 2000);
+        }
+        
+        // 显示水质监测信息
+        function showWaterQualityInfo(position) {
+          // 随机生成水质监测数据
+          const temperature = (22 + Math.random() * 5).toFixed(1);
+          const oxygen = (5 + Math.random() * 3).toFixed(1);
+          const ph = (6.5 + Math.random()).toFixed(1);
+          
+          // 创建信息窗口内容
+          const content = `
+            <div class="info-window">
+              <div class="text-blue-600 font-medium mb-1">水质监测点${currentPathIndex + 1}</div>
+              <div class="flex flex-col space-y-1 text-sm">
+                <div>水温: ${temperature}°C</div>
+                <div>溶氧: ${oxygen}mg/L</div>
+                <div>pH值: ${ph}</div>
+              </div>
+            </div>
+          `;
+          
+          // 创建信息窗口
+          const infoWindow = new AMap.InfoWindow({
+            content: content,
+            offset: new AMap.Pixel(0, -30)
+          });
+          
+          // 打开信息窗口
+          infoWindow.open(map, position);
+          
+          // 2秒后关闭信息窗口
+          setTimeout(() => {
+            infoWindow.close();
+          }, 1500);
+        }
+      } catch (error) {
+        console.error('地图初始化失败:', error);
+        mapContainer.innerHTML = '<div style="padding:20px;text-align:center;color:red;">地图初始化失败: ' + error.message + '</div>';
+      }
+    }
+    
+    // 初始化航行速度选择按钮
+    function initSpeedOptions() {
+      const speedOptions = document.querySelectorAll('.speed-option');
+      const speedDisplay = document.getElementById('cruise-speed');
+
+      console.log('初始化速度选择按钮，找到', speedOptions.length, '个按钮');
+
+      if (speedOptions.length > 0) {
+        speedOptions.forEach(option => {
+          option.addEventListener('click', function() {
+            console.log('速度按钮被点击:', this.getAttribute('data-speed'));
+
+            // 移除所有选项的激活样式
+            speedOptions.forEach(btn => {
+              btn.classList.remove('active');
+            });
+
+            // 添加当前选项的激活样式
+            this.classList.add('active');
+
+            // 更新速度显示
+            const speed = this.getAttribute('data-speed');
+            let speedText = '中速';
+
+            switch(speed) {
+              case 'low':
+                speedText = '低速';
+                break;
+              case 'medium':
+                speedText = '中速';
+                break;
+              case 'high':
+                speedText = '高速';
+                break;
+            }
+
+            if (speedDisplay) {
+              speedDisplay.textContent = speedText;
+              console.log('速度显示已更新为:', speedText);
+            }
+
+            // 显示修改成功的通知
+            if (typeof showMessage === 'function') {
+              showMessage(`航行速度已设置为${speedText}`, 'success');
+            } else {
+              console.log(`航行速度已设置为${speedText}`);
+            }
+
+            // 可以在这里添加API调用来更新后端状态
+            updateCruiseSpeed(speed);
+          });
+        });
+      } else {
+        console.warn('未找到速度选择按钮');
+      }
+    }
+
+    // 更新巡航速度到后端
+    function updateCruiseSpeed(speed) {
+      const speedData = {
+        speed: speed,
+        timestamp: new Date().toISOString(),
+        deviceId: 'RDKX5-001'
+      };
+
+      // 发送到后端API（如果需要）
+      fetch('/api/cruise/speed', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(speedData)
+      }).then(response => {
+        if (response.ok) {
+          console.log('速度设置已同步到后端');
+        }
+      }).catch(error => {
+        console.log('速度设置同步失败，使用本地模式:', error);
+      });
+    }
+
+    // 初始化预测水质功能
+    function initPredictWaterQuality() {
+      const predictBtn = document.getElementById('predict-water-quality-btn');
+
+      if (predictBtn) {
+        predictBtn.addEventListener('click', function() {
+          // 显示加载状态
+          const originalText = this.innerHTML;
+          this.innerHTML = '<i data-lucide="loader" class="w-4 h-4 mr-2 animate-spin"></i><span>预测中...</span>';
+          this.disabled = true;
+
+          // 模拟API调用
+          const currentData = {
+            temperature: parseFloat(document.getElementById('temperature').textContent),
+            oxygen: parseFloat(document.getElementById('oxygen').textContent),
+            ph: parseFloat(document.getElementById('ph-value').textContent),
+            tds: parseFloat(document.getElementById('tds-value').textContent),
+            turbidity: parseFloat(document.getElementById('turbidity').textContent),
+            timestamp: new Date().toISOString()
+          };
+
+          // 调用预测API
+          fetch('/api/predict/water-quality', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(currentData)
+          }).then(response => response.json())
+          .then(data => {
+            if (data.status === 'success') {
+              showPredictionResults(data.prediction);
+              showMessage('水质预测完成', 'success');
+            } else {
+              showMessage('预测失败，请稍后重试', 'warning');
+            }
+          }).catch(error => {
+            console.log('预测API调用失败:', error);
+            // 显示模拟预测结果
+            showPredictionResults({
+              next_24h: {
+                temperature: (currentData.temperature + (Math.random() - 0.5) * 2).toFixed(1),
+                oxygen: (currentData.oxygen + (Math.random() - 0.5) * 1).toFixed(1),
+                ph: (currentData.ph + (Math.random() - 0.5) * 0.5).toFixed(1),
+                tds: Math.round(currentData.tds + (Math.random() - 0.5) * 50),
+                turbidity: (currentData.turbidity + (Math.random() - 0.5) * 0.5).toFixed(1)
+              },
+              risk_level: Math.random() > 0.7 ? 'high' : Math.random() > 0.4 ? 'medium' : 'low',
+              recommendations: ['建议增加溶解氧监测频率', '注意水温变化趋势', '定期检查pH值稳定性']
+            });
+            showMessage('使用模拟数据进行预测', 'info');
+          }).finally(() => {
+            // 恢复按钮状态
+            this.innerHTML = originalText;
+            this.disabled = false;
+            if (window.lucide) {
+              lucide.createIcons();
+            }
+          });
+        });
+      }
+    }
+
+    // 显示预测结果
+    function showPredictionResults(prediction) {
+      const modal = document.createElement('div');
+      modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+      modal.innerHTML = `
+        <div class="bg-white rounded-lg p-6 w-96 max-w-[90%] shadow-xl">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-medium">水质预测结果</h3>
+            <button class="text-gray-400 hover:text-gray-600 close-prediction">
+              <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+          </div>
+          <div class="space-y-4">
+            <div>
+              <h4 class="font-medium text-gray-700 mb-2">未来24小时预测值</h4>
+              <div class="grid grid-cols-2 gap-2 text-sm">
+                <div>水温: ${prediction.next_24h.temperature}°C</div>
+                <div>溶解氧: ${prediction.next_24h.oxygen}mg/L</div>
+                <div>pH值: ${prediction.next_24h.ph}</div>
+                <div>TDS: ${prediction.next_24h.tds}ppm</div>
+                <div class="col-span-2">浊度: ${prediction.next_24h.turbidity}NTU</div>
+              </div>
+            </div>
+            <div>
+              <h4 class="font-medium text-gray-700 mb-2">风险等级</h4>
+              <span class="px-2 py-1 rounded-full text-xs font-medium ${
+                prediction.risk_level === 'high' ? 'bg-red-100 text-red-800' :
+                prediction.risk_level === 'medium' ? 'bg-yellow-100 text-yellow-800' :
+                'bg-green-100 text-green-800'
+              }">
+                ${prediction.risk_level === 'high' ? '高风险' :
+                  prediction.risk_level === 'medium' ? '中风险' : '低风险'}
+              </span>
+            </div>
+            <div>
+              <h4 class="font-medium text-gray-700 mb-2">建议措施</h4>
+              <ul class="text-sm text-gray-600 space-y-1">
+                ${prediction.recommendations.map(rec => `<li>• ${rec}</li>`).join('')}
+              </ul>
+            </div>
+          </div>
+        </div>
+      `;
+
+      document.body.appendChild(modal);
+
+      // 初始化图标
+      if (window.lucide) {
+        lucide.createIcons();
+      }
+
+      // 关闭按钮事件
+      modal.querySelector('.close-prediction').addEventListener('click', function() {
+        document.body.removeChild(modal);
+      });
+
+      // 点击背景关闭
+      modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+          document.body.removeChild(modal);
+        }
+      });
+    }
+
+    // MQTT数据更新函数
+    function updateMQTTData() {
+      // 更新定位数据
+      fetch('/api/position')
+        .then(response => response.json())
+        .then(data => {
+          if (data.status === 'success') {
+            const pos = data.data;
+            document.getElementById('position-latitude').textContent = pos.latitude.toFixed(6) + '°';
+            document.getElementById('position-longitude').textContent = pos.longitude.toFixed(6) + '°';
+            document.getElementById('position-altitude').textContent = pos.altitude.toFixed(1) + 'm';
+            document.getElementById('position-speed').textContent = pos.speed.toFixed(1) + ' m/s';
+            document.getElementById('position-course').textContent = pos.course.toFixed(1) + '°';
+            document.getElementById('position-satellites').textContent = pos.satellites;
+
+            const statusElement = document.getElementById('position-status');
+            if (pos.valid) {
+              statusElement.textContent = '正常';
+              statusElement.className = 'text-green-500';
+            } else {
+              statusElement.textContent = pos.message || '无效';
+              statusElement.className = 'text-red-500';
+            }
+          }
+        })
+        .catch(error => console.log('定位数据获取失败:', error));
+
+      // 更新AI检测数据
+      fetch('/api/ai_detection')
+        .then(response => response.json())
+        .then(data => {
+          if (data.status === 'success') {
+            const ai = data.data;
+            const detection = ai.detection || {};
+
+            document.getElementById('ai-disease-detected').textContent = detection.disease_detected ? '检测到病害' : '正常';
+            document.getElementById('ai-disease-detected').className = detection.disease_detected ? 'text-red-500' : 'text-green-500';
+            document.getElementById('ai-detection-count').textContent = detection.detection_count || 0;
+
+            // 计算最高置信度
+            let maxConfidence = 0;
+            if (detection.detections && detection.detections.length > 0) {
+              maxConfidence = Math.max(...detection.detections.map(d => d.confidence || 0));
+            }
+            document.getElementById('ai-max-confidence').textContent = (maxConfidence * 100).toFixed(1) + '%';
+
+            document.getElementById('ai-status').textContent = ai.message || '运行中';
+            document.getElementById('ai-status').className = 'text-blue-500';
+          }
+        })
+        .catch(error => console.log('AI检测数据获取失败:', error));
+
+      // 更新系统状态数据
+      fetch('/api/system_status')
+        .then(response => response.json())
+        .then(data => {
+          if (data.status === 'success') {
+            const sys = data.data;
+
+            document.getElementById('system-nav-state').textContent = sys.navigation_state || '未知';
+
+            const runningElement = document.getElementById('system-running');
+            runningElement.textContent = sys.running ? '运行中' : '停止';
+            runningElement.className = sys.running ? 'text-green-500' : 'text-red-500';
+
+            const hardware = sys.hardware || {};
+            document.getElementById('system-battery').textContent = (hardware.battery_level || 0) + '%';
+            document.getElementById('system-cpu').textContent = (hardware.cpu_usage || 0) + '%';
+            document.getElementById('system-memory').textContent = (hardware.memory_usage || 0) + '%';
+            document.getElementById('system-temperature').textContent = (hardware.temperature || 0) + '°C';
+          }
+        })
+        .catch(error => console.log('系统状态数据获取失败:', error));
+    }
+
+    // 启动MQTT数据定时更新
+    setInterval(updateMQTTData, 2000); // 每2秒更新一次
+    updateMQTTData(); // 立即执行一次
+
+    // ==================== 远程控制函数 ====================
+
+    // 操作日志管理
+    function addLog(message, type = 'info') {
+      const logContainer = document.getElementById('operation-log');
+      const timestamp = new Date().toLocaleTimeString();
+      const logEntry = document.createElement('div');
+      logEntry.className = 'log-entry';
+
+      logEntry.innerHTML = `
+        <span class="log-timestamp">[${timestamp}]</span>
+        <span class="log-${type}">${message}</span>
+      `;
+
+      logContainer.appendChild(logEntry);
+      logContainer.scrollTop = logContainer.scrollHeight;
+
+      // 只保留最近50条日志
+      const entries = logContainer.querySelectorAll('.log-entry');
+      if (entries.length > 50) {
+        entries[0].remove();
+      }
+    }
+
+    function clearLog() {
+      const logContainer = document.getElementById('operation-log');
+      logContainer.innerHTML = '<div class="text-gray-500">日志已清空</div>';
+    }
+
+    // 通用MQTT指令发送函数
+    async function sendMQTTCommand(endpoint, data, successMessage) {
+      try {
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+
+        if (result.status === 'success') {
+          addLog(successMessage, 'success');
+          return result;
+        } else {
+          addLog(`指令发送失败: ${result.message}`, 'error');
+          return null;
+        }
+      } catch (error) {
+        addLog(`网络错误: ${error.message}`, 'error');
+        return null;
+      }
+    }
+
+    // ==================== 导航控制函数 ====================
+
+    async function setTarget() {
+      const lat = parseFloat(document.getElementById('target-lat').value);
+      const lng = parseFloat(document.getElementById('target-lng').value);
+      const alt = parseFloat(document.getElementById('target-alt').value) || 0;
+
+      if (isNaN(lat) || isNaN(lng)) {
+        addLog('请输入有效的纬度和经度', 'warning');
+        return;
+      }
+
+      const data = {
+        command: 'SET_TARGET',
+        params: { lat, lng, alt }
+      };
+
+      await sendMQTTCommand('/api/control/navigation', data,
+        `目标坐标已设置: (${lat.toFixed(6)}, ${lng.toFixed(6)}, ${alt}m)`);
+    }
+
+    async function startNavigation() {
+      const data = { command: 'NAVIGATE_START' };
+      await sendMQTTCommand('/api/control/navigation', data, '导航已启动');
+    }
+
+    async function stopNavigation() {
+      const data = { command: 'NAVIGATE_STOP' };
+      await sendMQTTCommand('/api/control/navigation', data, '导航已停止');
+    }
+
+    async function getPosition() {
+      const data = { command: 'GET_POSITION' };
+      await sendMQTTCommand('/api/control/navigation', data, '位置查询指令已发送');
+    }
+
+    // ==================== 投药控制函数 ====================
+
+    async function startMedication() {
+      const bayId = parseInt(document.getElementById('medication-bay').value);
+      const volume = parseInt(document.getElementById('medication-volume').value);
+      const duration = parseInt(document.getElementById('medication-duration').value);
+
+      if (isNaN(volume) || volume <= 0) {
+        addLog('请输入有效的投药量', 'warning');
+        return;
+      }
+
+      if (isNaN(duration) || duration <= 0) {
+        addLog('请输入有效的持续时间', 'warning');
+        return;
+      }
+
+      const data = {
+        command: 'START_MEDICATION',
+        bay_id: bayId,
+        volume: volume,
+        duration: duration
+      };
+
+      await sendMQTTCommand('/api/control/medication', data,
+        `投药已启动: 药仓${bayId}, ${volume}ml, ${duration}秒`);
+    }
+
+    async function stopMedication() {
+      const bayId = parseInt(document.getElementById('medication-bay').value);
+
+      const data = {
+        command: 'STOP_MEDICATION',
+        bay_id: bayId
+      };
+
+      await sendMQTTCommand('/api/control/medication', data, `药仓${bayId}投药已停止`);
+    }
+
+    async function getMedicationStatus() {
+      const data = { command: 'GET_MEDICATION_STATUS' };
+      await sendMQTTCommand('/api/control/medication', data, '投药状态查询指令已发送');
+    }
+
+    // ==================== 系统控制函数 ====================
+
+    async function startModule() {
+      const module = document.getElementById('system-module').value;
+
+      const data = {
+        command: 'START_MODULE',
+        module: module
+      };
+
+      await sendMQTTCommand('/api/control/system', data, `${module}模块启动指令已发送`);
+    }
+
+    async function stopModule() {
+      const module = document.getElementById('system-module').value;
+
+      const data = {
+        command: 'STOP_MODULE',
+        module: module
+      };
+
+      await sendMQTTCommand('/api/control/system', data, `${module}模块停止指令已发送`);
+    }
+
+    async function getSystemStatus() {
+      const data = { command: 'GET_SYSTEM_STATUS' };
+      await sendMQTTCommand('/api/control/system', data, '系统状态查询指令已发送');
+    }
+
+    // ==================== 紧急控制函数 ====================
+
+    async function emergencyStop() {
+      if (!confirm('确定要执行紧急停止吗？这将立即中断所有操作！')) {
+        return;
+      }
+
+      const data = { command: 'EMERGENCY_STOP' };
+      await sendMQTTCommand('/api/control/emergency', data, '🚨 紧急停止指令已发送');
+    }
+
+    // 页面加载完成后的初始化
+    document.addEventListener('DOMContentLoaded', function() {
+      addLog('远程控制系统已就绪', 'info');
+    });
+
+  </script>
+</body>
+</html>

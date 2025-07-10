@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>鱼群'视'卫智能渔业水环境管理系统 - 2025</title>
+  <!-- TailwindCSS -->
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <!-- Recharts -->
+  <script src="https://unpkg.com/react@17/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/recharts/umd/Recharts.min.js"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- AMap API -->
+  <script type="text/javascript" id="amap-script"></script>
+  <!-- 高质量中文字体 -->
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+  <!-- 添加更美观的favicon -->
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230891b2' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M22 13A10 10 0 0 0 12 3'%3E%3C/path%3E%3Cpath d='M15 3a18.2 18.2 0 0 1-1.724 7.553A15.31 15.31 0 0 1 10 15.886'%3E%3C/path%3E%3Cpath d='M9 6.998a13.16 13.16 0 0 1-.476 3.81A16.619 16.619 0 0 1 7 13.862'%3E%3C/path%3E%3Cpath d='M8 19.03v.97h8v-.97'%3E%3C/path%3E%3Cpath d='M4 15h.393a7.5 7.5 0 0 0 7.108 0H12'%3E%3C/path%3E%3Cpath d='M2 14.984l.35-.5c1.2-1.5 1.824-1.717 3.325-1 1.5.85 1.95-.331 1.95-1.5'%3E%3C/path%3E%3C/svg%3E" type="image/svg+xml">
+  
+  <!-- PWA 支持 -->
+  <meta name="theme-color" content="#0891b2">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="鱼群'视'卫智能渔业水环境管理系统">
+  
+  <!-- 页面性能优化 -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link rel="preconnect" href="https://unpkg.com">
+  
+  <style>
+    body {
+      font-family: 'Noto Sans SC', system-ui, -apple-system, sans-serif;
+      scroll-behavior: smooth;
+    }
+    
+    /* 动画效果 */
+    @keyframes float {
+      0% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+      100% { transform: translateY(0px); }
+    }
+    
+    .float-animation {
+      animation: float 3s ease-in-out infinite;
+    }
+    
+    /* 渐变背景 */
+    .gradient-bg {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    
+    /* 卡片阴影 */
+    .card-shadow {
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* 加载动画 */
+    .loading-spinner {
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #3498db;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 2s linear infinite;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    /* 状态指示器 */
+    .status-indicator {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      display: inline-block;
+      margin-right: 8px;
+    }
+    
+    .status-online { background-color: #10b981; }
+    .status-offline { background-color: #ef4444; }
+    .status-warning { background-color: #f59e0b; }
+    
+    /* 响应式设计 */
+    @media (max-width: 768px) {
+      .mobile-hidden { display: none; }
+      .mobile-full { width: 100%; }
+    }
+  </style>
+</head>
+
+<body class="bg-gray-50 min-h-screen">
+  <!-- 导航栏 -->
+  <nav class="bg-white shadow-lg sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between h-16">
+        <div class="flex items-center">
+          <div class="flex-shrink-0 flex items-center">
+            <i data-lucide="waves" class="h-8 w-8 text-cyan-600 mr-3"></i>
+            <h1 class="text-xl font-bold text-gray-900">鱼群'视'卫管理系统</h1>
+          </div>
+        </div>
+        
+        <div class="flex items-center space-x-4">
+          <!-- 系统状态指示器 -->
+          <div class="flex items-center space-x-2">
+            <span class="status-indicator status-online" id="mqtt-status"></span>
+            <span class="text-sm text-gray-600">MQTT</span>
+          </div>
+          
+          <div class="flex items-center space-x-2">
+            <span class="status-indicator status-online" id="system-status"></span>
+            <span class="text-sm text-gray-600">系统</span>
+          </div>
+          
+          <!-- 时间显示 -->
+          <div class="text-sm text-gray-600" id="current-time"></div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- 主要内容区域 -->
+  <main class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+    
+    <!-- 系统概览卡片 -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      
+      <!-- 水质状态卡片 -->
+      <div class="bg-white rounded-lg shadow-md p-6 card-shadow">
+        <div class="flex items-center">
+          <div class="flex-shrink-0">
+            <i data-lucide="droplets" class="h-8 w-8 text-blue-600"></i>
+          </div>
+          <div class="ml-4">
+            <h3 class="text-lg font-medium text-gray-900">水质状态</h3>
+            <p class="text-sm text-gray-600" id="water-quality-status">检测中...</p>
+          </div>
+        </div>
+        <div class="mt-4">
+          <div class="text-2xl font-bold text-blue-600" id="water-quality-score">--</div>
+          <div class="text-xs text-gray-500">综合评分</div>
+        </div>
+      </div>
+      
+      <!-- 定位状态卡片 -->
+      <div class="bg-white rounded-lg shadow-md p-6 card-shadow">
+        <div class="flex items-center">
+          <div class="flex-shrink-0">
+            <i data-lucide="map-pin" class="h-8 w-8 text-green-600"></i>
+          </div>
+          <div class="ml-4">
+            <h3 class="text-lg font-medium text-gray-900">定位状态</h3>
+            <p class="text-sm text-gray-600" id="position-status">定位中...</p>
+          </div>
+        </div>
+        <div class="mt-4">
+          <div class="text-sm font-medium text-green-600" id="position-coords">--</div>
+          <div class="text-xs text-gray-500">当前坐标</div>
+        </div>
+      </div>
+      
+      <!-- AI检测卡片 -->
+      <div class="bg-white rounded-lg shadow-md p-6 card-shadow">
+        <div class="flex items-center">
+          <div class="flex-shrink-0">
+            <i data-lucide="eye" class="h-8 w-8 text-purple-600"></i>
+          </div>
+          <div class="ml-4">
+            <h3 class="text-lg font-medium text-gray-900">AI检测</h3>
+            <p class="text-sm text-gray-600" id="ai-detection-status">监测中...</p>
+          </div>
+        </div>
+        <div class="mt-4">
+          <div class="text-2xl font-bold text-purple-600" id="ai-detection-count">0</div>
+          <div class="text-xs text-gray-500">检测数量</div>
+        </div>
+      </div>
+      
+      <!-- 系统状态卡片 -->
+      <div class="bg-white rounded-lg shadow-md p-6 card-shadow">
+        <div class="flex items-center">
+          <div class="flex-shrink-0">
+            <i data-lucide="cpu" class="h-8 w-8 text-orange-600"></i>
+          </div>
+          <div class="ml-4">
+            <h3 class="text-lg font-medium text-gray-900">系统状态</h3>
+            <p class="text-sm text-gray-600" id="system-running-status">运行中...</p>
+          </div>
+        </div>
+        <div class="mt-4">
+          <div class="text-sm font-medium text-orange-600" id="system-uptime">--</div>
+          <div class="text-xs text-gray-500">运行时间</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 数据图表区域 -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+      
+      <!-- 水质数据图表 -->
+      <div class="bg-white rounded-lg shadow-md p-6 card-shadow">
+        <h3 class="text-lg font-medium text-gray-900 mb-4">水质数据趋势</h3>
+        <div id="water-quality-chart" class="h-64"></div>
+      </div>
+      
+      <!-- 定位轨迹图 -->
+      <div class="bg-white rounded-lg shadow-md p-6 card-shadow">
+        <h3 class="text-lg font-medium text-gray-900 mb-4">定位轨迹</h3>
+        <div id="position-map" class="h-64 bg-gray-100 rounded flex items-center justify-center">
+          <div class="text-gray-500">地图加载中...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 控制面板 -->
+    <div class="bg-white rounded-lg shadow-md p-6 card-shadow mb-8">
+      <h3 class="text-lg font-medium text-gray-900 mb-4">系统控制</h3>
+      
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        
+        <!-- 导航控制 -->
+        <div class="border rounded-lg p-4">
+          <h4 class="font-medium text-gray-900 mb-3">导航控制</h4>
+          <div class="space-y-2">
+            <button onclick="sendNavigationCommand('START_NAVIGATION')" 
+                    class="w-full bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition-colors">
+              开始导航
+            </button>
+            <button onclick="sendNavigationCommand('STOP_NAVIGATION')" 
+                    class="w-full bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition-colors">
+              停止导航
+            </button>
+          </div>
+        </div>
+        
+        <!-- 投药控制 -->
+        <div class="border rounded-lg p-4">
+          <h4 class="font-medium text-gray-900 mb-3">投药控制</h4>
+          <div class="space-y-2">
+            <button onclick="sendMedicationCommand('START_MEDICATION')" 
+                    class="w-full bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors">
+              开始投药
+            </button>
+            <button onclick="sendMedicationCommand('STOP_MEDICATION')" 
+                    class="w-full bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700 transition-colors">
+              停止投药
+            </button>
+          </div>
+        </div>
+        
+        <!-- 紧急控制 -->
+        <div class="border rounded-lg p-4">
+          <h4 class="font-medium text-gray-900 mb-3">紧急控制</h4>
+          <div class="space-y-2">
+            <button onclick="sendEmergencyCommand('EMERGENCY_STOP')" 
+                    class="w-full bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition-colors">
+              紧急停止
+            </button>
+            <button onclick="sendEmergencyCommand('EMERGENCY_RETURN')" 
+                    class="w-full bg-yellow-600 text-white px-4 py-2 rounded hover:bg-yellow-700 transition-colors">
+              紧急返回
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 数据表格 -->
+    <div class="bg-white rounded-lg shadow-md p-6 card-shadow">
+      <h3 class="text-lg font-medium text-gray-900 mb-4">实时数据</h3>
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">时间</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">水温(°C)</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">pH值</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">溶解氧(mg/L)</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">TDS(ppm)</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">浊度(NTU)</th>
+            </tr>
+          </thead>
+          <tbody id="data-table-body" class="bg-white divide-y divide-gray-200">
+            <!-- 数据行将通过JavaScript动态添加 -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <!-- JavaScript -->
+  <script src="static/js/main.js"></script>
+  
+  <!-- 初始化图标 -->
+  <script>
+    lucide.createIcons();
+  </script>
+</body>
+</html>
