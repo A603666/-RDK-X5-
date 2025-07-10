@@ -70,21 +70,6 @@
 │   ├── global_config.py        # 全局配置管理
 │   ├── mqtt_config.py          # MQTT配置
 │   └── system_logger.py        # 日志配置
-├── docs/                       # 项目文档
-│   ├── README.md               # 文档目录
-│   ├── dependencies.md         # 依赖管理文档
-│   └── api.md                  # API接口文档
-├── tests/                      # 测试文件
-├── scripts/                    # 实用脚本
-│   └── verify_dependencies.py  # 依赖验证脚本
-├── legacy/                     # 原始模块（参考）
-├── logs/                       # 日志文件
-├── requirements.txt            # 统一依赖管理
-├── board_requirements.txt      # 板端依赖
-├── pc_requirements.txt         # PC端依赖
-├── dev-requirements.txt        # 开发依赖
-├── LICENSE                     # 开源许可证
-├── .gitignore                  # Git忽略文件
 ├── CONTRIBUTING.md             # 贡献指南
 └── README_cn.md               # 中文说明文档
 ```
@@ -345,7 +330,6 @@ pytest tests/test_performance/
 - `POST /api/config` - 配置更新
 - `GET /api/logs` - 获取系统日志
 
-详细API文档请参考: [docs/api.md](docs/api.md)
 
 ## 🔧 故障排除
 
@@ -490,21 +474,6 @@ docker build -t fishery-pc .
 docker run -p 5001:5001 fishery-pc
 ```
 
-### 系统监控
-
-#### 性能监控
-```bash
-# 系统资源监控
-htop
-iotop
-nethogs
-
-# 应用性能监控
-python scripts/performance_monitor.py
-
-# 日志监控
-tail -f logs/*.log | grep -E "(ERROR|WARNING)"
-```
 
 #### 健康检查
 ```bash
@@ -518,156 +487,3 @@ mosquitto_pub -h localhost -t health/check -m "ping"
 python scripts/sensor_health_check.py
 ```
 
-## 🔧 运维管理
-
-### 数据备份
-```bash
-# 配置文件备份
-tar -czf config_backup_$(date +%Y%m%d).tar.gz config/
-
-# 日志文件备份
-tar -czf logs_backup_$(date +%Y%m%d).tar.gz logs/
-
-# 数据库备份（如果使用）
-sqlite3 data/fishery.db ".backup backup_$(date +%Y%m%d).db"
-```
-
-### 系统更新
-```bash
-# 代码更新
-git pull origin main
-
-# 依赖更新
-pip install -r requirements.txt --upgrade
-
-# 重启服务
-sudo systemctl restart fishery-board
-sudo systemctl restart fishery-pc
-```
-
-### 故障恢复
-```bash
-# 重置配置
-cp config/default_config.py config/global_config.py
-
-# 清理日志
-find logs/ -name "*.log" -mtime +7 -delete
-
-# 重启所有服务
-sudo systemctl restart mosquitto
-sudo systemctl restart fishery-board
-sudo systemctl restart fishery-pc
-```
-
-## 🤝 贡献指南
-
-我们欢迎所有形式的贡献！请参考 [CONTRIBUTING.md](CONTRIBUTING.md) 了解详细的贡献流程。
-
-### 开发环境设置
-```bash
-# 安装开发依赖
-pip install -r dev-requirements.txt
-
-# 设置pre-commit钩子
-pre-commit install
-
-# 运行代码检查
-flake8 .
-black --check .
-mypy board/ pc/ config/
-```
-
-### 提交规范
-- 使用清晰的提交信息
-- 遵循代码风格规范
-- 添加必要的测试
-- 更新相关文档
-
-### 代码审查
-- 所有PR需要至少一人审查
-- 确保测试通过
-- 检查文档更新
-- 验证向后兼容性
-
-## 📋 更新日志
-
-### v1.0.0 (2025-01-10)
-**🎉 首次发布**
-- ✅ 完整的板端和PC端主程序
-- ✅ 统一的MQTT双向通讯架构
-- ✅ 模块化设计和配置管理
-- ✅ Web界面和API接口
-- ✅ 完整的文档和测试
-
-**新功能:**
-- 🔄 完整闭环控制系统
-- 📡 MQTT双向通讯协议
-- 🤖 AI智能检测模块
-- 🧭 GPS-IMU融合定位
-- 💊 智能投药控制系统
-- 📊 实时数据监控界面
-
-**技术改进:**
-- 🏗️ 重构项目文件结构
-- 📦 统一依赖管理系统
-- 🔧 全局配置管理
-- 📝 完整的中英文文档
-- 🧪 自动化测试框架
-
-### 路线图
-
-#### v1.1.0 (计划中)
-- 🔮 增强AI预测模型
-- 📱 移动端应用支持
-- 🌐 多语言界面支持
-- 📈 高级数据分析功能
-
-#### v1.2.0 (计划中)
-- ☁️ 云端数据同步
-- 🔔 智能报警系统
-- 📊 数据可视化增强
-- 🔐 用户权限管理
-
-#### v2.0.0 (长期规划)
-- 🤖 深度学习模型优化
-- 🌊 多船协同作业
-- 🛰️ 卫星通讯支持
-- 🏭 工业级部署方案
-
-## 📄 许可证
-
-本项目采用 MIT 许可证 - 详见 [LICENSE](LICENSE) 文件。
-
-### 开源声明
-本项目基于以下开源技术构建：
-- Flask (BSD License)
-- TensorFlow (Apache 2.0 License)
-- OpenCV (Apache 2.0 License)
-- MQTT (Eclipse Public License)
-- NumPy (BSD License)
-
-## 📞 技术支持
-
-- **项目主页**: https://github.com/your-repo/fishery-management-system
-- **问题反馈**: https://github.com/your-repo/fishery-management-system/issues
-- **文档中心**: [docs/](docs/)
-- **开发者社区**: [Discussions](https://github.com/your-repo/fishery-management-system/discussions)
-
-## 🙏 致谢
-
-感谢以下开源项目和技术支持：
-- [地平线RDKX5开发板](https://developer.horizon.ai/)
-- [Flask Web框架](https://flask.palletsprojects.com/)
-- [MQTT协议](https://mqtt.org/)
-- [TensorFlow深度学习框架](https://tensorflow.org/)
-- [OpenCV计算机视觉库](https://opencv.org/)
-
----
-
-<div align="center">
-
-**鱼群'视'卫智能渔业水环境管理系统** - 让智能科技守护水域生态 🐟🌊
-
-Made with ❤️ by 开发团队
-
-</div>
